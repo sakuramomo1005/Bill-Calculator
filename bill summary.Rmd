@@ -1,0 +1,105 @@
+---
+output: pdf_document
+---
+
+Dear roommates, a new month is coming! It's time for us to calculate our bills during last month. 
+
+```{R include=FALSE}
+### money
+
+setwd('/Users/yaolanqiu/Documents/Octopus/list')
+
+## parameters 
+p=4 # the number of people here to consider
+ourname=c('ylq','lxl','wyt','dxy')   ## our names 
+library(knitr)
+library(stringr)
+table=read.csv('try.csv')
+
+n=dim(table)[1]
+
+people_owned=rep(0,p)
+people_paid=rep(0,p)
+table_owned=c()
+for(i in 1:n){
+  temp=table[i,3:6]
+  share_num=sum(temp=='*')
+  amount=table[i,'money']/share_num
+  owned=which(temp=='*')
+  people_owned[owned]=people_owned[owned]+amount
+  empty=rep(0,p)
+  empty[owned]=empty[owned]+amount
+  table_owned=rbind(table_owned,empty)
+  
+  paid=as.character(table[i,'paid'])
+  paid=c(str_split(c(paid),"[,]"))[[1]]
+  paid=as.numeric(paid)
+  
+  people_paid[paid]=people_paid[paid]+table[i,'money']/length(paid)
+}
+
+people_owned
+people_paid
+people_absolute=people_owned-people_paid
+
+table_owned=round(table_owned,1)
+rownames(table_owned)=NULL
+table_owned=rbind(table_owned,apply(table_owned,2,sum))
+c(table[,2],c(sum(table[,2])))
+table_owned=cbind(c(table[,2],c(sum(table[,2]))),table_owned)
+c(as.character(table[,1]),'total')
+table_owned=cbind(c(as.character(table[,1]),'total'),table_owned)
+table_owned=data.frame(table_owned)
+colnames(table_owned)=c('item','money',ourname)
+
+### output the report
+table_owned
+people_absolute
+for(i in 2:p){
+  print(paste(ourname[i],' should give ylq: $',round(people_absolute[i])))
+}
+```
+
+### Table 1: Our Total Bills
+```{R echo=FALSE}
+kable(table)
+```
+
+* item: the item name
+* money: the total price of the item
+* people who used this item is marked as $"*"$
+* paid: the people who paid the money for this item
+
+* 1=:, 2: ,3: ,4:
+
+### Table 2: The Paid Amount for Each of Us
+```{R echo=FALSE}
+kable(table_owned)
+```
+
+
+### Summary: 
+
+Each of us should pay:
+```{R echo=FALSE}
+print(ourname)
+print(people_owned)
+```
+
+Each of us has paid: 
+```{R echo=FALSE}
+print(ourname)
+print(people_paid)
+```
+
+Therefore
+
+```{R echo=FALSE}
+for(i in 2:p){
+  print(paste(ourname[i],' should give ylq: $',round(people_absolute[i])))
+}
+```
+
+You can check the bill with your calculator. If you have any problem with the bill, please feel free to connect me. May you have a great new month!
+
+
